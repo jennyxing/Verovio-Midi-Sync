@@ -291,7 +291,7 @@ var startAudio = function(currentTime, fromCache, onsuccess) {
 		var obj = data[n];
     // if ((queuedTime += obj[1]) <= currentTime) { 
 
-		if ((queuedTime += obj[1]) < currentTime) { //Jenny small fix to have the first not played
+		if ((queuedTime += obj[1]) < currentTime) { //Jenny small fix to having the first note played
 			offset = queuedTime;
 			continue;
 		}
