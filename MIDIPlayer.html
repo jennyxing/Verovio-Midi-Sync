@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+	<meta http-equiv="content-type" content="text/html; charset=utf-8" />
+	<title>MIDI.js - Sequencing in Javascript.</title>
+	<!-- shim -->
+	<script src="./inc/shim/Base64.js" type="text/javascript"></script>
+	<script src="./inc/shim/Base64binary.js" type="text/javascript"></script>
+	<script src="./inc/shim/WebAudioAPI.js" type="text/javascript"></script>
+	<script src="./inc/shim/WebMIDIAPI.js" type="text/javascript"></script>
+	<!-- jasmid package -->
+	<script src="./inc/jasmid/stream.js"></script>
+	<script src="./inc/jasmid/midifile.js"></script>
+	<script src="./inc/jasmid/replayer.js"></script>
+	<!-- midi.js package -->
+	<script src="./js/midi/audioDetect.js" type="text/javascript"></script>
+	<script src="./js/midi/gm.js" type="text/javascript"></script>
+	<script src="./js/midi/loader.js" type="text/javascript"></script>
+	<script src="./js/midi/plugin.audiotag.js" type="text/javascript"></script>
+	<script src="./js/midi/plugin.webaudio.js" type="text/javascript"></script>
+	<script src="./js/midi/plugin.webmidi.js" type="text/javascript"></script>
+	<script src="./js/midi/player.js" type="text/javascript"></script>
+	<script src="./js/midi/synesthesia.js" type="text/javascript"></script>
+	<!-- utils -->
+	<script src="./js/util/dom_request_xhr.js" type="text/javascript"></script>
+	<script src="./js/util/dom_request_script.js" type="text/javascript"></script>
+	<!-- includes -->
+	<script src="./inc/timer.js" type="text/javascript"></script>
+	<script src="./inc/event.js" type="text/javascript"></script>
+	
+	<script src="./js/verovio-toolkit.js" type="text/javascript"></script>
+	<script src="http://code.jquery.com/jquery-1.11.0.min.js" type="text/javascript"></script>
+	
+</head>
+<body>
+	<input type="file" id="meiFile" multiple size="50" onchange="renderSVGandMIDI()">
+    <div id="player"></div>
+
+<script type="text/javascript">
+
+	if (typeof (console) === "undefined") var console = {
+		log: function() {}
+	};
+	var vrvToolkit = new verovio.toolkit();
+	
+	function renderSVGandMIDI(){		
+		var meiFile = $('#meiFile')[0].files[0];
+		var reader = new FileReader();
+		reader.readAsText(meiFile);
+		reader.onload = function(e) {
+			//load svg of score
+			var svg = vrvToolkit.renderData( e.target.result + "\n", "" );
+			$("#output").html(svg);
+
+			//add midi.js player
+			var player;
+			MIDI.loader = new sketch.ui.Timer;
+			MIDI.loadPlugin({
+				soundfontUrl: "./soundfont/",
+				onprogress: function(state, progress) {
+					MIDI.loader.setValue(progress * 100);
+				},
+				onsuccess: function() {
+					//set up MIDI.Player
+					player = MIDI.Player;
+					player.timeWarp = 2; // speed the song is played back
+					//load midi of score
+						var base64midi = vrvToolkit.renderToMidi( e.target.result + "\n", "" );
+						loadedsong = 'data:audio/midi;base64,' + base64midi;
+						player.loadFile(loadedsong, player.start);
+					MIDI.Player.removeListener(); // removes current listener.
+					MIDI.Player.addListener(function(data) {
+							var now = data.now; // where we are now
+							var end = data.end; // time when song ends
+							var channel = data.channel; // channel note is playing on
+							var message = data.message; // 128 is noteOff, 144 is noteOn
+							var note = data.note; // the note
+							var velocity = data.velocity; // the velocity of the note
+							console.log(note); //eventually call back to verovio function. what needs to be passed?
+					});
+					
+				}
+			});
+			
+		};
+				
+	}	
+</script>
+
+<div id="output"/>
+
+</body>
+</html>
