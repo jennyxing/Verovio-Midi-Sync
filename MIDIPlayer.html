@@ -63,20 +63,30 @@
 				onsuccess: function() {
 					//set up MIDI.Player
 					player = MIDI.Player;
-					player.timeWarp = 2; // speed the song is played back
+					player.timeWarp = 5 // speed the song is played back
 					//load midi of score
+					// var testgetelementarri = vrvToolkit.getElementAttr( "d1e37" );
+					// console.log(testgetelementarri);
+					$("#d1e37").css({'color': 'red'});
+					
 						var base64midi = vrvToolkit.renderToMidi( e.target.result + "\n", "" );
 						loadedsong = 'data:audio/midi;base64,' + base64midi;
 						player.loadFile(loadedsong, player.start);
-					MIDI.Player.removeListener(); // removes current listener.
-					MIDI.Player.addListener(function(data) {
+						MIDI.Player.removeListener(); // removes current listener.
+						MIDI.Player.addListener(function(data) {
 							var now = data.now; // where we are now
 							var end = data.end; // time when song ends
 							var channel = data.channel; // channel note is playing on
 							var message = data.message; // 128 is noteOff, 144 is noteOn
+							
 							var note = data.note; // the note
 							var velocity = data.velocity; // the velocity of the note
-							console.log(note); //eventually call back to verovio function. what needs to be passed?
+							// console.log(now)
+							if (message == 144){
+								var testGetElementsAtTime = vrvToolkit.getElementsAtTime(now);
+								console.log(testGetElementsAtTime);
+							}
+							//console.log(note); //eventually call back to verovio function. what needs to be passed?
 					});
 					
 				}
