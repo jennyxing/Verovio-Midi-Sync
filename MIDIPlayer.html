@@ -53,19 +53,19 @@
                 var svg = vrvToolkit.renderData(e.target.result + "\n", "");
 
                 /////////////this approach did not work/////////
-                // //  ---Using DOMParser with XML--- 
+                // //  ---Using DOMParser with XML---
                 // var parser = new DOMParser();
-                // //----creates an xml document container--- 
+                // //----creates an xml document container---
                 // var xmlDoc = parser.parseFromString(svg, "text/xml");
-                // //---access the element within the xml document container--- 
+                // //---access the element within the xml document container---
                 // var elemXML = xmlDoc.documentElement
-                //     //---convert the xml element to an inline SVG element--- 
+                //     //---convert the xml element to an inline SVG element---
                 // var elemSVG = document.adoptNode(elemXML);
-                // //---append the svg group element<g>, with its 3 circles--- 
-                // //---get id of the d3-generated container element-- 
+                // //---append the svg group element<g>, with its 3 circles---
+                // //---get id of the d3-generated container element--
                 // console.log(elemSVG)
-								// 
-								// 
+								//
+								//
                 // //d3.xml expects a url for elemSVG, but we are passing in a SVG element instead
                 // d3.xml(elemSVG, function(error, documentFragment) {
                 //     if (error) {
@@ -76,7 +76,7 @@
                 //     console.log(svgNode)
                 // });
 
-                //instead, I appended the SVG to the document first 
+                //instead, I appended the SVG to the document first
                 $("#output").html(svg);
                 //then used D3 to append a filter into defs (hardcoded)
                 var d3svg = d3.select("svg");
@@ -115,6 +115,7 @@
                     .attr("mode", "normal");
                 //add midi.js player
                 var player;
+
                 MIDI.loader = new sketch.ui.Timer;
                 MIDI.loadPlugin({
                     soundfontUrl: "./soundfont/",
@@ -122,32 +123,51 @@
                         MIDI.loader.setValue(progress * 100);
                     },
                     onsuccess: function() {
+                        var time = -100;
                         //set up MIDI.Player
                         player = MIDI.Player;
                         player.timeWarp = 2; // speed the song is played back
-                        //load midi of score					
+                        //load midi of score
                         var base64midi = vrvToolkit.renderToMidi(e.target.result + "\n", "");
                         loadedsong = 'data:audio/midi;base64,' + base64midi;
                         player.loadFile(loadedsong, player.start);
-                        MIDI.Player.removeListener(); // removes current listener.
-                        MIDI.Player.addListener(function(data) {
-                            var now = data.now; // where we are now
-                            var end = data.end; // time when song ends
-                            var channel = data.channel; // channel note is playing on
-                            var message = data.message; // 128 is noteOff, 144 is noteOn
-                            var note = data.note; // the note
-                            var velocity = data.velocity; // the velocity of the note
-                            // console.log(now)
-                            if (message == 144) {
-                                var testGetElementsAtTime = vrvToolkit.getElementsAtTime(now);
-                                var elementsattime = JSON.parse(testGetElementsAtTime);
-                                console.log(elementsattime.notes);
-                                elementsattime.notes.forEach(function(noteid) {
-                                    d3svg.select("#" + noteid).style("filter", "url(#highlighting)")
-                                });
-                            }
-                            //console.log(note); 
-                        });
+                        function tick() {
+                          var testGetElementsAtTime = vrvToolkit.getElementsAtTime(time);
+                          time += 100;
+                          var elementsattime = JSON.parse(testGetElementsAtTime);
+                          console.log(elementsattime.notes);
+                          elementsattime.notes.forEach(function(noteid) {
+                              d3svg.select("#" + noteid).style("filter", "url(#highlighting)")
+                          });
+                        }
+                        window.setInterval(function tick() {
+                          var testGetElementsAtTime = vrvToolkit.getElementsAtTime(time);
+                          time += 100;
+                          var elementsattime = JSON.parse(testGetElementsAtTime);
+                          console.log(elementsattime.notes);
+                          elementsattime.notes.forEach(function(noteid) {
+                              d3svg.select("#" + noteid).style("filter", "url(#highlighting)")
+                          });
+                        }, 100);
+                        // MIDI.Player.removeListener(); // removes current listener.
+                        // MIDI.Player.addListener(function(data) {
+                        //     var now = data.now; // where we are now
+                        //     var end = data.end; // time when song ends
+                        //     var channel = data.channel; // channel note is playing on
+                        //     var message = data.message; // 128 is noteOff, 144 is noteOn
+                        //     var note = data.note; // the note
+                        //     var velocity = data.velocity; // the velocity of the note
+                        //     // console.log(now)
+                        //     if (message == 144) {
+                        //         var testGetElementsAtTime = vrvToolkit.getElementsAtTime(now);
+                        //         var elementsattime = JSON.parse(testGetElementsAtTime);
+                        //         console.log(elementsattime.notes);
+                        //         elementsattime.notes.forEach(function(noteid) {
+                        //             d3svg.select("#" + noteid).style("filter", "url(#highlighting)")
+                        //         });
+                        //     }
+                        //     //console.log(note);
+                        // });
 
                     }
                 });
