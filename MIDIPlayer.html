@@ -1,103 +1,161 @@
 <!DOCTYPE html>
 <html xmlns="http://www.w3.org/1999/xhtml">
+
 <head>
-	<meta http-equiv="content-type" content="text/html; charset=utf-8" />
-	<title>MIDI.js - Sequencing in Javascript.</title>
-	<!-- shim -->
-	<script src="./inc/shim/Base64.js" type="text/javascript"></script>
-	<script src="./inc/shim/Base64binary.js" type="text/javascript"></script>
-	<script src="./inc/shim/WebAudioAPI.js" type="text/javascript"></script>
-	<script src="./inc/shim/WebMIDIAPI.js" type="text/javascript"></script>
-	<!-- jasmid package -->
-	<script src="./inc/jasmid/stream.js"></script>
-	<script src="./inc/jasmid/midifile.js"></script>
-	<script src="./inc/jasmid/replayer.js"></script>
-	<!-- midi.js package -->
-	<script src="./js/midi/audioDetect.js" type="text/javascript"></script>
-	<script src="./js/midi/gm.js" type="text/javascript"></script>
-	<script src="./js/midi/loader.js" type="text/javascript"></script>
-	<script src="./js/midi/plugin.audiotag.js" type="text/javascript"></script>
-	<script src="./js/midi/plugin.webaudio.js" type="text/javascript"></script>
-	<script src="./js/midi/plugin.webmidi.js" type="text/javascript"></script>
-	<script src="./js/midi/player.js" type="text/javascript"></script>
-	<script src="./js/midi/synesthesia.js" type="text/javascript"></script>
-	<!-- utils -->
-	<script src="./js/util/dom_request_xhr.js" type="text/javascript"></script>
-	<script src="./js/util/dom_request_script.js" type="text/javascript"></script>
-	<!-- includes -->
-	<script src="./inc/timer.js" type="text/javascript"></script>
-	<script src="./inc/event.js" type="text/javascript"></script>
-	
-	<script src="./js/verovio-toolkit.js" type="text/javascript"></script>
-	<script src="http://code.jquery.com/jquery-1.11.0.min.js" type="text/javascript"></script>
-	
+    <meta http-equiv="content-type" content="text/html; charset=utf-8" />
+    <title>MIDI.js - Sequencing in Javascript.</title>
+    <!-- shim -->
+    <script src="./inc/shim/Base64.js" type="text/javascript"></script>
+    <script src="./inc/shim/Base64binary.js" type="text/javascript"></script>
+    <script src="./inc/shim/WebAudioAPI.js" type="text/javascript"></script>
+    <script src="./inc/shim/WebMIDIAPI.js" type="text/javascript"></script>
+    <!-- jasmid package -->
+    <script src="./inc/jasmid/stream.js"></script>
+    <script src="./inc/jasmid/midifile.js"></script>
+    <script src="./inc/jasmid/replayer.js"></script>
+    <!-- midi.js package -->
+    <script src="./js/midi/audioDetect.js" type="text/javascript"></script>
+    <script src="./js/midi/gm.js" type="text/javascript"></script>
+    <script src="./js/midi/loader.js" type="text/javascript"></script>
+    <script src="./js/midi/plugin.audiotag.js" type="text/javascript"></script>
+    <script src="./js/midi/plugin.webaudio.js" type="text/javascript"></script>
+    <script src="./js/midi/plugin.webmidi.js" type="text/javascript"></script>
+    <script src="./js/midi/player.js" type="text/javascript"></script>
+    <script src="./js/midi/synesthesia.js" type="text/javascript"></script>
+    <!-- utils -->
+    <script src="./js/util/dom_request_xhr.js" type="text/javascript"></script>
+    <script src="./js/util/dom_request_script.js" type="text/javascript"></script>
+    <!-- includes -->
+    <script src="./inc/timer.js" type="text/javascript"></script>
+    <script src="./inc/event.js" type="text/javascript"></script>
+
+    <script src="./js/verovio-toolkit.js" type="text/javascript"></script>
+    <script src="http://code.jquery.com/jquery-1.11.0.min.js" type="text/javascript"></script>
+    <script src="http://d3js.org/d3.v3.min.js"></script>
 </head>
+
 <body>
-	<input type="file" id="meiFile" multiple size="50" onchange="renderSVGandMIDI()">
+    Upload a MEI file: <input type="file" id="meiFile" multiple size="50" onchange="renderSVGandMIDI()" value = "Upload a MEI file">
     <div id="player"></div>
 
-<script type="text/javascript">
+    <script type="text/javascript">
+        if (typeof(console) === "undefined") var console = {
+            log: function() {}
+        };
+        var vrvToolkit = new verovio.toolkit();
 
-	if (typeof (console) === "undefined") var console = {
-		log: function() {}
-	};
-	var vrvToolkit = new verovio.toolkit();
-	
-	function renderSVGandMIDI(){		
-		var meiFile = $('#meiFile')[0].files[0];
-		var reader = new FileReader();
-		reader.readAsText(meiFile);
-		reader.onload = function(e) {
-			//load svg of score
-			var svg = vrvToolkit.renderData( e.target.result + "\n", "" );
-			$("#output").html(svg);
+        function renderSVGandMIDI() {
+            var meiFile = $('#meiFile')[0].files[0];
+            var reader = new FileReader();
+            reader.readAsText(meiFile);
+            reader.onload = function(e) {
+                //load svg of score from verovio. this returns a string I think?
+                var svg = vrvToolkit.renderData(e.target.result + "\n", "");
 
-			//add midi.js player
-			var player;
-			MIDI.loader = new sketch.ui.Timer;
-			MIDI.loadPlugin({
-				soundfontUrl: "./soundfont/",
-				onprogress: function(state, progress) {
-					MIDI.loader.setValue(progress * 100);
-				},
-				onsuccess: function() {
-					//set up MIDI.Player
-					player = MIDI.Player;
-					player.timeWarp = 5 // speed the song is played back
-					//load midi of score
-					// var testgetelementarri = vrvToolkit.getElementAttr( "d1e37" );
-					// console.log(testgetelementarri);
-					$("#d1e37").css({'color': 'red'});
-					
-						var base64midi = vrvToolkit.renderToMidi( e.target.result + "\n", "" );
-						loadedsong = 'data:audio/midi;base64,' + base64midi;
-						player.loadFile(loadedsong, player.start);
-						MIDI.Player.removeListener(); // removes current listener.
-						MIDI.Player.addListener(function(data) {
-							var now = data.now; // where we are now
-							var end = data.end; // time when song ends
-							var channel = data.channel; // channel note is playing on
-							var message = data.message; // 128 is noteOff, 144 is noteOn
-							
-							var note = data.note; // the note
-							var velocity = data.velocity; // the velocity of the note
-							// console.log(now)
-							if (message == 144){
-								var testGetElementsAtTime = vrvToolkit.getElementsAtTime(now);
-								console.log(testGetElementsAtTime);
-							}
-							//console.log(note); //eventually call back to verovio function. what needs to be passed?
-					});
-					
-				}
-			});
-			
-		};
-				
-	}	
-</script>
+                /////////////this approach did not work/////////
+                // //  ---Using DOMParser with XML--- 
+                // var parser = new DOMParser();
+                // //----creates an xml document container--- 
+                // var xmlDoc = parser.parseFromString(svg, "text/xml");
+                // //---access the element within the xml document container--- 
+                // var elemXML = xmlDoc.documentElement
+                //     //---convert the xml element to an inline SVG element--- 
+                // var elemSVG = document.adoptNode(elemXML);
+                // //---append the svg group element<g>, with its 3 circles--- 
+                // //---get id of the d3-generated container element-- 
+                // console.log(elemSVG)
+								// 
+								// 
+                // //d3.xml expects a url for elemSVG, but we are passing in a SVG element instead
+                // d3.xml(elemSVG, function(error, documentFragment) {
+                //     if (error) {
+                //         console.log("error" + error);
+                //         return;
+                //     }
+                //     var svgNode = documentFragment.getElementsByTagName("svg")[0];
+                //     console.log(svgNode)
+                // });
 
-<div id="output"/>
+                //instead, I appended the SVG to the document first 
+                $("#output").html(svg);
+                //then used D3 to append a filter into defs (hardcoded)
+                var d3svg = d3.select("svg");
+                var defs = d3svg.select("defs");
+                var filter = defs.append("filter")
+                    .attr("id", "highlighting")
+                    .attr("x", "-50%")
+                    .attr("y", "-50%")
+                    .attr("width", "200%")
+                    .attr("height", "200%");
+                filter.append("feFlood")
+                    .attr("flood-color", "red")
+                    .attr("result", "base");
+                filter.append("feGaussianBlur")
+                    .attr("in", "SourceAlpha")
+                    .attr("stdDeviation", 50)
+                    .attr("result", "blur-out");
+                filter.append("feOffset")
+                    .attr("in", "blur-out")
+                    .attr("dx", 5)
+                    .attr("dy", 5)
+                    .attr("result", "the-shadow");
+                filter.append("feColorMatrix")
+                    .attr("in", "the-shadow")
+                    .attr("result", "color-out")
+                    .attr("type", "matrix")
+                    .attr("values", "0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1.5 0")
+                filter.append("feComposite")
+                    .attr("in", "base")
+                    .attr("in2", "color-out")
+                    .attr("operator", "in")
+                    .attr("result", "drop");
+                filter.append("feComposite")
+                    .attr("in", "SourceGraphic")
+                    .attr("in2", "drop")
+                    .attr("mode", "normal");
+                //add midi.js player
+                var player;
+                MIDI.loader = new sketch.ui.Timer;
+                MIDI.loadPlugin({
+                    soundfontUrl: "./soundfont/",
+                    onprogress: function(state, progress) {
+                        MIDI.loader.setValue(progress * 100);
+                    },
+                    onsuccess: function() {
+                        //set up MIDI.Player
+                        player = MIDI.Player;
+                        player.timeWarp = 2; // speed the song is played back
+                        //load midi of score					
+                        var base64midi = vrvToolkit.renderToMidi(e.target.result + "\n", "");
+                        loadedsong = 'data:audio/midi;base64,' + base64midi;
+                        player.loadFile(loadedsong, player.start);
+                        MIDI.Player.removeListener(); // removes current listener.
+                        MIDI.Player.addListener(function(data) {
+                            var now = data.now; // where we are now
+                            var end = data.end; // time when song ends
+                            var channel = data.channel; // channel note is playing on
+                            var message = data.message; // 128 is noteOff, 144 is noteOn
+                            var note = data.note; // the note
+                            var velocity = data.velocity; // the velocity of the note
+                            // console.log(now)
+                            if (message == 144) {
+                                var testGetElementsAtTime = vrvToolkit.getElementsAtTime(now);
+                                var elementsattime = JSON.parse(testGetElementsAtTime);
+                                console.log(elementsattime.notes);
+                                elementsattime.notes.forEach(function(noteid) {
+                                    d3svg.select("#" + noteid).style("filter", "url(#highlighting)")
+                                });
+                            }
+                            //console.log(note); 
+                        });
 
+                    }
+                });
+
+            };
+
+        }
+    </script>
+    <div id="output" />
 </body>
 </html>
