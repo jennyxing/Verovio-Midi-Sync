@@ -3,7 +3,7 @@
 
 <head>
     <meta http-equiv="content-type" content="text/html; charset=utf-8" />
-    <title>MIDI.js - Sequencing in Javascript.</title>
+    <title>Verovio Midi Sync</title>
     <!-- shim -->
     <script src="./inc/shim/Base64.js" type="text/javascript"></script>
     <script src="./inc/shim/Base64binary.js" type="text/javascript"></script>
@@ -32,150 +32,52 @@
     <script src="./js/verovio-toolkit.js" type="text/javascript"></script>
     <script src="http://code.jquery.com/jquery-1.11.0.min.js" type="text/javascript"></script>
     <script src="http://d3js.org/d3.v3.min.js"></script>
+    <script src="MIDIPlayer.js"></script>
+    
+    <script src="https://netdna.bootstrapcdn.com/bootstrap/3.1.1/js/bootstrap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jasny-bootstrap/3.1.3/js/jasny-bootstrap.js"></script>
+    <link rel="stylesheet" type="text/css" href="https://netdna.bootstrapcdn.com/bootstrap/3.1.1/css/bootstrap.min.css">
+    <link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/jasny-bootstrap/3.1.3/css/jasny-bootstrap.css">
 </head>
 
-<body>
-    Upload a MEI file: <input type="file" id="meiFile" multiple size="50" onchange="renderSVGandMIDI()" value = "Upload a MEI file">
-    <div id="player"></div>
+<!-- <div id="navbar" class="navbar navbar-default navbar-fixed-top">
+  <div class="container-fluid">
+    <div class="navbar-header">
+      <a class="navbar-brand">
+        <img src="verovio-fadded-50.png">
+      </a>
+    </div>    
+    <button type = "button" class="btn btn-success navbar-btn" id = "playpause" style="display: none;" onclick = "playpause()"> Play </button>
+  </div>
+  <div style="clear: both;"></div>
+  <hr/>
+</div> -->
 
-    <script type="text/javascript">
-        if (typeof(console) === "undefined") var console = {
-            log: function() {}
-        };
-        var vrvToolkit = new verovio.toolkit();
+<nav class="navbar navbar-default navbar-fixed-top">
+  <div class="container-fluid">
+    <div class="navbar-header">
+      <a class="navbar-brand">
+        <img src="verovio-fadded-50.png">
+      </a>
+    </div>
+  <ul class="nav navbar-nav">
+    <div class="fileinput fileinput-new" data-provides="fileinput" style = "padding-left: 20px; padding-right: 20px; margin-top: 20px;">
+      <span class="btn btn-primary btn-file navbar-btn">
+        <span>Upload MEI file</span>
+        <input type="file" id="meiFile" onchange="renderSVGandMIDI()"/>
+      </span>
+      <span class="fileinput-filename"></span>
+      <span class="fileinput-new">No file chosen</span>
+    </div>
+    <button type = "button" class="btn btn-success navbar-btn" id = "playpause" style="display: none; margin-top: 10px;" onclick = "playpause()"> Play </button>
+  </ul>
+  </div>
+  <div style="clear: both;"></div>
+</nav>
 
-        function renderSVGandMIDI() {
-            var meiFile = $('#meiFile')[0].files[0];
-            var reader = new FileReader();
-            reader.readAsText(meiFile);
-            reader.onload = function(e) {
-                //load svg of score from verovio. this returns a string I think?
-                var svg = vrvToolkit.renderData(e.target.result + "\n", "");
-
-                /////////////this approach did not work/////////
-                // //  ---Using DOMParser with XML---
-                // var parser = new DOMParser();
-                // //----creates an xml document container---
-                // var xmlDoc = parser.parseFromString(svg, "text/xml");
-                // //---access the element within the xml document container---
-                // var elemXML = xmlDoc.documentElement
-                //     //---convert the xml element to an inline SVG element---
-                // var elemSVG = document.adoptNode(elemXML);
-                // //---append the svg group element<g>, with its 3 circles---
-                // //---get id of the d3-generated container element--
-                // console.log(elemSVG)
-								//
-								//
-                // //d3.xml expects a url for elemSVG, but we are passing in a SVG element instead
-                // d3.xml(elemSVG, function(error, documentFragment) {
-                //     if (error) {
-                //         console.log("error" + error);
-                //         return;
-                //     }
-                //     var svgNode = documentFragment.getElementsByTagName("svg")[0];
-                //     console.log(svgNode)
-                // });
-
-                //instead, I appended the SVG to the document first
-                $("#output").html(svg);
-                //then used D3 to append a filter into defs (hardcoded)
-                var d3svg = d3.select("svg");
-                var defs = d3svg.select("defs");
-                var filter = defs.append("filter")
-                    .attr("id", "highlighting")
-                    .attr("x", "-50%")
-                    .attr("y", "-50%")
-                    .attr("width", "200%")
-                    .attr("height", "200%");
-                filter.append("feFlood")
-                    .attr("flood-color", "red")
-                    .attr("result", "base");
-                filter.append("feGaussianBlur")
-                    .attr("in", "SourceAlpha")
-                    .attr("stdDeviation", 50)
-                    .attr("result", "blur-out");
-                filter.append("feOffset")
-                    .attr("in", "blur-out")
-                    .attr("dx", 5)
-                    .attr("dy", 5)
-                    .attr("result", "the-shadow");
-                filter.append("feColorMatrix")
-                    .attr("in", "the-shadow")
-                    .attr("result", "color-out")
-                    .attr("type", "matrix")
-                    .attr("values", "0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1.5 0")
-                filter.append("feComposite")
-                    .attr("in", "base")
-                    .attr("in2", "color-out")
-                    .attr("operator", "in")
-                    .attr("result", "drop");
-                filter.append("feComposite")
-                    .attr("in", "SourceGraphic")
-                    .attr("in2", "drop")
-                    .attr("mode", "normal");
-                //add midi.js player
-                var player;
-
-                MIDI.loader = new sketch.ui.Timer;
-                MIDI.loadPlugin({
-                    soundfontUrl: "./soundfont/",
-                    onprogress: function(state, progress) {
-                        MIDI.loader.setValue(progress * 100);
-                    },
-                    onsuccess: function() {
-                        var time = -100;
-                        //set up MIDI.Player
-                        player = MIDI.Player;
-                        player.timeWarp = 2; // speed the song is played back
-                        //load midi of score
-                        var base64midi = vrvToolkit.renderToMidi(e.target.result + "\n", "");
-                        loadedsong = 'data:audio/midi;base64,' + base64midi;
-                        player.loadFile(loadedsong, player.start);
-                        function tick() {
-                          var testGetElementsAtTime = vrvToolkit.getElementsAtTime(time);
-                          time += 100;
-                          var elementsattime = JSON.parse(testGetElementsAtTime);
-                          console.log(elementsattime.notes);
-                          elementsattime.notes.forEach(function(noteid) {
-                              d3svg.select("#" + noteid).style("filter", "url(#highlighting)")
-                          });
-                        }
-                        window.setInterval(function tick() {
-                          var testGetElementsAtTime = vrvToolkit.getElementsAtTime(time);
-                          time += 100;
-                          var elementsattime = JSON.parse(testGetElementsAtTime);
-                          console.log(elementsattime.notes);
-                          elementsattime.notes.forEach(function(noteid) {
-                              d3svg.select("#" + noteid).style("filter", "url(#highlighting)")
-                          });
-                        }, 100);
-                        // MIDI.Player.removeListener(); // removes current listener.
-                        // MIDI.Player.addListener(function(data) {
-                        //     var now = data.now; // where we are now
-                        //     var end = data.end; // time when song ends
-                        //     var channel = data.channel; // channel note is playing on
-                        //     var message = data.message; // 128 is noteOff, 144 is noteOn
-                        //     var note = data.note; // the note
-                        //     var velocity = data.velocity; // the velocity of the note
-                        //     // console.log(now)
-                        //     if (message == 144) {
-                        //         var testGetElementsAtTime = vrvToolkit.getElementsAtTime(now);
-                        //         var elementsattime = JSON.parse(testGetElementsAtTime);
-                        //         console.log(elementsattime.notes);
-                        //         elementsattime.notes.forEach(function(noteid) {
-                        //             d3svg.select("#" + noteid).style("filter", "url(#highlighting)")
-                        //         });
-                        //     }
-                        //     //console.log(note);
-                        // });
-
-                    }
-                });
-
-            };
-
-        }
-    </script>
-    <div id="output" />
+<body style = "padding-top: 100px;">
+  
+  
+    <div id="output" style="overflow:hidden;"/>
 </body>
 </html>
