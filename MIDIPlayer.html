@@ -32,26 +32,15 @@
     <script src="./js/verovio-toolkit.js" type="text/javascript"></script>
     <script src="http://code.jquery.com/jquery-1.11.0.min.js" type="text/javascript"></script>
     <script src="http://d3js.org/d3.v3.min.js"></script>
-    <script src="MIDIPlayer.js"></script>
-    
+
     <script src="https://netdna.bootstrapcdn.com/bootstrap/3.1.1/js/bootstrap.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jasny-bootstrap/3.1.3/js/jasny-bootstrap.js"></script>
     <link rel="stylesheet" type="text/css" href="https://netdna.bootstrapcdn.com/bootstrap/3.1.1/css/bootstrap.min.css">
     <link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/jasny-bootstrap/3.1.3/css/jasny-bootstrap.css">
+  
+    <script src="MIDIPlayer.js"></script>
+    <link rel="stylesheet" type="text/css" href="style.css">
 </head>
-
-<!-- <div id="navbar" class="navbar navbar-default navbar-fixed-top">
-  <div class="container-fluid">
-    <div class="navbar-header">
-      <a class="navbar-brand">
-        <img src="verovio-fadded-50.png">
-      </a>
-    </div>    
-    <button type = "button" class="btn btn-success navbar-btn" id = "playpause" style="display: none;" onclick = "playpause()"> Play </button>
-  </div>
-  <div style="clear: both;"></div>
-  <hr/>
-</div> -->
 
 <nav class="navbar navbar-default navbar-fixed-top">
   <div class="container-fluid">
@@ -60,24 +49,25 @@
         <img src="verovio-fadded-50.png">
       </a>
     </div>
-  <ul class="nav navbar-nav">
-    <div class="fileinput fileinput-new" data-provides="fileinput" style = "padding-left: 20px; padding-right: 20px; margin-top: 20px;">
-      <span class="btn btn-primary btn-file navbar-btn">
-        <span>Upload MEI file</span>
-        <input type="file" id="meiFile" onchange="renderSVGandMIDI()"/>
-      </span>
-      <span class="fileinput-filename"></span>
-      <span class="fileinput-new">No file chosen</span>
-    </div>
-    <button type = "button" class="btn btn-success navbar-btn" id = "playpause" style="display: none; margin-top: 10px;" onclick = "playpause()"> Play </button>
-  </ul>
+    <ul class="nav navbar-nav">
+      <div class="fileinput fileinput-new" data-provides="fileinput">
+        <span class="btn btn-primary btn-file navbar-btn">
+          <span>Upload MEI file</span>
+          <input type="file" id="meiFile" onchange="renderSVGandMIDI()"/>
+        </span>
+        <span class="fileinput-filename"></span>
+        <span class="fileinput-new">No file chosen</span>
+      </div>
+      <button type = "button" class="btn btn-success navbar-btn" id = "playpause" style="display: none;" onclick = "playpause()"> Play </button>
+    </ul>
+    <ul class="nav navbar-nav navbar-right">
+        <li><a id = "meiexampleslink" href="http://www4.iath.virginia.edu/mei/Verovio_Midi_Sync/MEI%20examples/" target="_blank">Example MEI Files</a></li>
+    </ul>
   </div>
   <div style="clear: both;"></div>
 </nav>
 
-<body style = "padding-top: 100px;">
-  
-  
-    <div id="output" style="overflow:hidden;"/>
+<body>
+    <div id="output"/>
 </body>
 </html>

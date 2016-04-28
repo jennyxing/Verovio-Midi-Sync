@@ -1,0 +1,21 @@
+g.note:hover{
+    filter: url(#highlighting);
+}
+
+body{
+  padding-top: 50px;
+}
+
+.fileinput{
+  padding-left: 20px;
+  padding-right: 20px; 
+  margin-top: 20px;
+}
+
+#playpause{
+  margin-top: 10px;
+}
+
+#meiexampleslink{
+  margin-top: 20px;
+}

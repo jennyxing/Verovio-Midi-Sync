@@ -4,8 +4,28 @@ if (typeof(console) === "undefined") var console = {
 var vrvToolkit = new verovio.toolkit();
 var time = 0;
 var highlighttick;
-var elementsAtTime;
 var notesbeingplayed = [];
+
+function tick() {
+    var elementsAtTime = vrvToolkit.getElementsAtTime(time);
+    time += 100;
+    var elementsattime = JSON.parse(elementsAtTime);
+    var group = document.querySelector('#output');
+    //getElementsByTagName actually recursively all the decendants with the tag 'svg'
+    //such as (for 3 pages) [svg, svg#definition-scale, svg, svg#definition-scale, svg, svg#definition-scale, definition-scale: svg#definition-scale]
+    var svgpage = group.getElementsByTagName('svg');
+    if (elementsattime.page > 0){
+      // console.log(elementsattime);
+      notesbeingplayed.forEach(function(noteid) {
+          d3.select(svgpage[(elementsattime.page-1)*2]).select("#" + noteid).style("filter", null)
+      });
+      elementsattime.notes.forEach(function(noteid) {
+          d3.select(svgpage[(elementsattime.page-1)*2]).select("#" + noteid).style("filter", "url(#highlighting)")
+          notesbeingplayed.push(noteid);
+      });
+    }
+}
+
 var playpause = function(stop) {
     if (MIDI.Player.playing) {
         $("#playpause").html("Play");
@@ -13,25 +33,7 @@ var playpause = function(stop) {
         MIDI.Player.pause(true);
     } else {
         $("#playpause").html("Pause");
-        highlighttick = window.setInterval(function tick() {
-            elementsAtTime = vrvToolkit.getElementsAtTime(time);
-            time += 100;
-            var elementsattime = JSON.parse(elementsAtTime);
-            var group = document.querySelector('#output');
-            //getElementsByTagName actually recursively all the decendants with the tag 'svg'
-            //such as (for 3 pages) [svg, svg#definition-scale, svg, svg#definition-scale, svg, svg#definition-scale, definition-scale: svg#definition-scale]
-            var svgpage = group.getElementsByTagName('svg');
-            if (elementsattime.page > 0){
-              // console.log(elementsattime);
-              notesbeingplayed.forEach(function(noteid) {
-                  d3.select(svgpage[(elementsattime.page-1)*2]).select("#" + noteid).style("filter", "none")
-              });
-              elementsattime.notes.forEach(function(noteid) {
-                  d3.select(svgpage[(elementsattime.page-1)*2]).select("#" + noteid).style("filter", "url(#highlighting)")
-                  notesbeingplayed.push(noteid);
-              });
-            }
-        }, 100);
+        highlighttick = window.setInterval(tick, 100);
         MIDI.Player.resume();
     }
 };
@@ -102,8 +104,6 @@ function renderSVGandMIDI() {
             .attr("in", "SourceGraphic")
             .attr("in2", "drop")
             .attr("mode", "normal");
-        var test = vrvToolkit.getPageWithElement("note-000000204344837");
-        console.log(test);
 
         MIDI.loader = new sketch.ui.Timer;
         MIDI.loadPlugin({
@@ -120,6 +120,18 @@ function renderSVGandMIDI() {
                 MIDI.Player.loadFile(loadedsong);
                 //show button for playing and pausing
                 $("#playpause").show();
+                //allow click of note to jump to the time in the MIDI the note is played
+                $("g.note").click(function() {
+                  window.clearInterval(highlighttick);
+                  MIDI.Player.pause(true);
+                  var timeofElement = vrvToolkit.getTimeForElement(this.id);
+                  //convert time of element to miliseconds
+                  MIDI.Player.currentTime = timeofElement/120.0*1000.0;
+                  time = MIDI.Player.currentTime;
+                  highlighttick = window.setInterval(tick, 100);
+                  $("#playpause").html("Pause");
+                  MIDI.Player.resume();
+                });
             }
         });
     };
