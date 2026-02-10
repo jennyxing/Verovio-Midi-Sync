@@ -1,7 +1,5 @@
 # Verovio-Midi-Sync
 
-Demo: http://www4.iath.virginia.edu/mei/Verovio_Midi_Sync/MIDIPlayer.html
-
 I will be integrating conversion to MIDI from MEI into Verovio, then synchronizing the MIDI playback with the rendered SVG visually with the Verovio Javascript toolkit. This project will be done using C++, Javascript, and SVG. It will utilize the Midifile tool written by Craig Sapp to write the MIDI files (https://github.com/craigsapp/midifile). This library has already been integrated into the Verovio codebase by Laurent Pugin. 
 
 
